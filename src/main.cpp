@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "DHTesp.h"
+#include "DS3231.h"
 
 #include "ring_buffer.h"
 #include "util.h"
@@ -12,17 +13,28 @@ DHTesp dht;
 RingBuffer<float> temp_c_values(10 * 60 / READ_SENSORS_INTERVAL_S);
 RingBuffer<float> humidity_values(10 * 60 / READ_SENSORS_INTERVAL_S);
 
+// DS3231 RTC
+RTClib rtc;
+
 Timer timer_read_sensors = {seconds(READ_SENSORS_INTERVAL_S)};
 
 void setup() {
   Serial.begin(115200);
   Serial.println("Heyo!");
 
+  Wire.begin();
+
   dht.setup(DHT_DATA_PIN, DHTesp::DHT22);
 }
 
 void ReadAllSensors() {
   Serial.println("Reading sensors...");
+
+  const DateTime now = rtc.now();
+  Serial.println("Time: " + String(now.year()) + "-" + String(now.month()) +
+                 "-" + String(now.day()) + "T" + String(now.hour()) + ":" +
+                 String(now.minute()) + ":" + String(now.second()));
+
   float temp_c = dht.getTemperature();
   if (!isnan(temp_c)) {
     temp_c_values.Insert(temp_c, millis());
