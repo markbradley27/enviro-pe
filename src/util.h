@@ -1,5 +1,5 @@
-#ifndef HENRIETTA_SRC_BOARDS_ENVIRO_MICKY_UTIL_H_
-#define HENRIETTA_SRC_BOARDS_ENVIRO_MICKY_UTIL_H_
+#ifndef ENVIRO_PE_SRC_UTIL_
+#define ENVIRO_PE_SRC_UTIL_
 
 struct Timer {
   unsigned long total_cycle_time;
@@ -61,4 +61,4 @@ int16_t JustifiedY(const JustifyYType type, const int16_t box_height,
          (type == MIDDLE ? 2 : 1);
 }
 
-#endif // HENRIETTA_SRC_BOARDS_ENVIRO_MICKY_UTIL_H_
+#endif // ENVIRO_PE_SRC_UTIL_

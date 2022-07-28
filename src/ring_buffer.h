@@ -1,5 +1,5 @@
-#ifndef HENRIETTA_SRC_BOARDS_ENVIRO_MICKY_RING_BUFFER_H_
-#define HENRIETTA_SRC_BOARDS_ENVIRO_MICKY_RING_BUFFER_H_
+#ifndef ENVIRO_PE_SRC_RING_BUFFER_
+#define ENVIRO_PE_SRC_RING_BUFFER_
 
 #include "Arduino.h"
 #include <vector>
@@ -124,4 +124,4 @@ private:
   int latest_ = 0;
 };
 
-#endif // HENRIETTA_SRC_BOARDS_ENVIRO_MICKY_RING_BUFFER_H_
+#endif // ENVIRO_PE_SRC_RING_BUFFER_
