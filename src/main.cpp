@@ -2,7 +2,6 @@
 #include "DHTesp.h"
 #include "DS3231.h"
 #include "PMserial.h"
-#include "SoftwareSerial.h" // Required for PMserial.
 
 #include "ring_buffer.h"
 #include "util.h"
@@ -10,22 +9,25 @@
 #define READ_SENSORS_INTERVAL_S 5
 
 // DHT22 Temp/Humidity sensor
-#define DHT_DATA_PIN D0
+#define DHT_DATA_PIN 13
 DHTesp dht;
 RingBuffer<float> temp_c_values(10 * 60 / READ_SENSORS_INTERVAL_S);
 RingBuffer<float> humidity_values(10 * 60 / READ_SENSORS_INTERVAL_S);
 
 // PMS5003 AQI sensor
-SerialPM pms(PMSx003, D3, D4);
+SerialPM pms(PMSx003, 32, 33);
 RingBuffer<uint16_t> pm25_values(10 * 60 / READ_SENSORS_INTERVAL_S);
 
 // DS3231 RTC
 RTClib rtc;
 
 // Timers
-Timer timer_read_sensors = {seconds(READ_SENSORS_INTERVAL_S)};
+Timer timer_read_sensors;
 
 void setup() {
+  // TODO: Figure out why I can't initialize the struct above anymore.
+  timer_read_sensors.total_cycle_time = seconds(READ_SENSORS_INTERVAL_S);
+
   Serial.begin(115200);
   Serial.println("Heyo!");
 
