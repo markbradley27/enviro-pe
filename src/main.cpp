@@ -15,7 +15,9 @@ RingBuffer<float> temp_c_values(10 * 60 / READ_SENSORS_INTERVAL_S);
 RingBuffer<float> humidity_values(10 * 60 / READ_SENSORS_INTERVAL_S);
 
 // PMS5003 AQI sensor
-SerialPM pms(PMSx003, 32, 33);
+#define PMS_RX 32
+#define PMS_TX 33
+SerialPM pms(PMSx003, PMS_RX, PMS_TX);
 RingBuffer<uint16_t> pm25_values(10 * 60 / READ_SENSORS_INTERVAL_S);
 
 // DS3231 RTC
