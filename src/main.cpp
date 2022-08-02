@@ -77,7 +77,7 @@ void ReadAllSensors() {
     Serial.println("Humidity: " + String(humidity_values.Latest().value) + "%");
   }
 
-  if (pms.read() == OK) {
+  if (pms.read() == SerialPM::OK) {
     pm25_values.Insert(pms.pm25, millis());
     Serial.println("PM2.5: " + String(pm25_values.Latest().value));
   }
