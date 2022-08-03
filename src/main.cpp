@@ -1,3 +1,4 @@
+#include "Adafruit_ILI9341.h"
 #include "Arduino.h"
 #include "DHTesp.h"
 #include "DS3231.h"
@@ -40,6 +41,7 @@ const TS_Calibration calibration(TS_Point(13, 11), TS_Point(3795, 3704),
                                  TS_Point(167, 214), TS_Point(2084, 640),
                                  DISPLAY_WIDTH, DISPLAY_HEIGHT);
 TouchDispatcher touch_dispatcher(TOUCH_CS, TOUCH_IRQ);
+Adafruit_ILI9341 display(TFT_CS, TFT_DC);
 
 void setup() {
   // TODO: Figure out why I can't initialize the struct above anymore.
@@ -54,21 +56,18 @@ void setup() {
 
   touch_dispatcher.registerHandler(
       TS_Point(0, 0), TS_Point(DISPLAY_WIDTH, DISPLAY_HEIGHT),
-      [](const int16_t x, const int16_t y, const int16_t z) {
+      [&display](const int16_t x, const int16_t y, const int16_t z) {
         Serial.printf("Touched; x: %d, y: %d, z: %d\r\n", x, y, z);
-      });
-  touch_dispatcher.registerHandler(
-      TS_Point(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2),
-      TS_Point(DISPLAY_WIDTH, DISPLAY_HEIGHT),
-      [](const int16_t x, const int16_t y, const int16_t z) {
-        Serial.printf("Q2\r\n");
-      });
-  touch_dispatcher.registerHandler(
-      TS_Point(0, 0), TS_Point(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2),
-      [](const int16_t x, const int16_t y, const int16_t z) {
-        Serial.printf("Q4\r\n");
+        display.fillScreen(ILI9341_BLACK);
+        display.setCursor(0, 0);
+        display.setTextColor(ILI9341_WHITE);
+        display.setTextSize(1);
+        display.println("Touched; x: " + String(x) + ", y: " + String(y) +
+                        ", z: " + String(z));
       });
   touch_dispatcher.begin(DISPLAY_ROTATION, calibration);
+  display.begin();
+  display.setRotation(DISPLAY_ROTATION);
 }
 
 void ReadAllSensors() {
