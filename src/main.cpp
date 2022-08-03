@@ -36,11 +36,13 @@ Timer timer_read_sensors;
 #define DISPLAY_WIDTH 320
 #define DISPLAY_HEIGHT 240
 #define DISPLAY_ROTATION 3
-const TS_Calibration calibration(TS_Point(13, 11), TS_Point(3795, 3704),
-                                 TS_Point(312, 113), TS_Point(482, 2175),
-                                 TS_Point(167, 214), TS_Point(2084, 640),
-                                 DISPLAY_WIDTH, DISPLAY_HEIGHT);
-TouchDispatcher touch_dispatcher(TOUCH_CS, TOUCH_IRQ);
+const TS_Calibration
+    TOUCH_SCREEN_CALIBRATION(TS_Point(13, 11), TS_Point(3795, 3704),
+                             TS_Point(312, 113), TS_Point(482, 2175),
+                             TS_Point(167, 214), TS_Point(2084, 640),
+                             DISPLAY_WIDTH, DISPLAY_HEIGHT);
+XPT2046_Calibrated touch_screen(TOUCH_CS, TOUCH_IRQ);
+TouchDispatcher touch_dispatcher(&touch_screen);
 Adafruit_ILI9341 display(TFT_CS, TFT_DC);
 
 void setup() {
@@ -54,6 +56,12 @@ void setup() {
   dht.setup(DHT_DATA_PIN, DHTesp::DHT22);
   pms.init();
 
+  touch_screen.begin();
+  touch_screen.setRotation(DISPLAY_ROTATION);
+  touch_screen.calibrate(TOUCH_SCREEN_CALIBRATION);
+  display.begin();
+  display.setRotation(DISPLAY_ROTATION);
+
   touch_dispatcher.registerHandler(
       TS_Point(0, 0), TS_Point(DISPLAY_WIDTH, DISPLAY_HEIGHT),
       [&display](const int16_t x, const int16_t y, const int16_t z) {
@@ -65,9 +73,6 @@ void setup() {
         display.println("Touched; x: " + String(x) + ", y: " + String(y) +
                         ", z: " + String(z));
       });
-  touch_dispatcher.begin(DISPLAY_ROTATION, calibration);
-  display.begin();
-  display.setRotation(DISPLAY_ROTATION);
 }
 
 void ReadAllSensors() {

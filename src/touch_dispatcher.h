@@ -3,23 +3,17 @@
 
 typedef std::function<void(const int16_t x, const int16_t y, const int16_t z)>
     TouchHandler;
-
 class TouchDispatcher {
 public:
-  TouchDispatcher(const uint8_t cs, const uint8_t irq) : ts_(cs, irq) {}
-
-  void begin(const int rotation, const TS_Calibration calibration) {
-    ts_.begin();
-    ts_.setRotation(rotation);
-    ts_.calibrate(calibration);
-  }
+  TouchDispatcher(XPT2046_Calibrated *const touch_screen)
+      : touch_screen_(touch_screen) {}
 
   void update() {
-    if (!ts_.touched()) {
+    if (!touch_screen_->touched()) {
       return;
     }
 
-    const TS_Point point = ts_.getPoint();
+    const TS_Point point = touch_screen_->getPoint();
     for (const auto &entry : handlers_) {
       if (entry.upper_left.x < point.x && point.x < entry.lower_right.x &&
           entry.upper_left.y < point.y && point.y < entry.lower_right.y) {
@@ -54,5 +48,5 @@ private:
   int next_handler_id_ = 0;
   std::vector<HandlerEntry> handlers_;
 
-  XPT2046_Calibrated ts_;
+  XPT2046_Calibrated *const touch_screen_;
 };
