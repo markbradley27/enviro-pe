@@ -1,10 +1,10 @@
 #include "Arduino.h"
 #include "DHTesp.h"
 #include "DS3231.h"
-#include "LayoutManager.h"
 #include "PMserial.h"
 
 #include "ring_buffer.h"
+#include "touch_dispatcher.h"
 #include "util.h"
 
 #define READ_SENSORS_INTERVAL_S 5
@@ -29,18 +29,17 @@ Timer timer_read_sensors;
 
 // ILI9341 Display
 #define TFT_CS 5
-#define TFT_DS 2
+#define TFT_DC 2
 #define TOUCH_CS 16
 #define TOUCH_IRQ 17
 #define DISPLAY_WIDTH 320
 #define DISPLAY_HEIGHT 240
-LayoutManager lm(TFT_CS, TFT_DS, TOUCH_CS, TOUCH_IRQ, DISPLAY_WIDTH,
-                 DISPLAY_HEIGHT, Orientation::LandscapeFlip, COLOR_BLACK);
-
-void logTouch(Screen const &screen, Touch const &touch) {
-  Serial.printf("Touch: x=%u, y=%u, pressure=%u\r\n", touch.x(), touch.y(),
-                touch.pressure());
-}
+#define DISPLAY_ROTATION 3
+const TS_Calibration calibration(TS_Point(13, 11), TS_Point(3795, 3704),
+                                 TS_Point(312, 113), TS_Point(482, 2175),
+                                 TS_Point(167, 214), TS_Point(2084, 640),
+                                 DISPLAY_WIDTH, DISPLAY_HEIGHT);
+TouchDispatcher touch_dispatcher(TOUCH_CS, TOUCH_IRQ);
 
 void setup() {
   // TODO: Figure out why I can't initialize the struct above anymore.
@@ -52,8 +51,24 @@ void setup() {
   Wire.begin(); // Required for RTC.
   dht.setup(DHT_DATA_PIN, DHTesp::DHT22);
   pms.init();
-  lm.setTouchEnd(logTouch);
-  lm.begin();
+
+  touch_dispatcher.registerHandler(
+      TS_Point(0, 0), TS_Point(DISPLAY_WIDTH, DISPLAY_HEIGHT),
+      [](const int16_t x, const int16_t y, const int16_t z) {
+        Serial.printf("Touched; x: %d, y: %d, z: %d\r\n", x, y, z);
+      });
+  touch_dispatcher.registerHandler(
+      TS_Point(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2),
+      TS_Point(DISPLAY_WIDTH, DISPLAY_HEIGHT),
+      [](const int16_t x, const int16_t y, const int16_t z) {
+        Serial.printf("Q2\r\n");
+      });
+  touch_dispatcher.registerHandler(
+      TS_Point(0, 0), TS_Point(DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2),
+      [](const int16_t x, const int16_t y, const int16_t z) {
+        Serial.printf("Q4\r\n");
+      });
+  touch_dispatcher.begin(DISPLAY_ROTATION, calibration);
 }
 
 void ReadAllSensors() {
@@ -84,7 +99,7 @@ void ReadAllSensors() {
 }
 
 void loop() {
-  lm.draw();
+  touch_dispatcher.update();
 
   if (timer_read_sensors.Complete()) {
     timer_read_sensors.Reset();
