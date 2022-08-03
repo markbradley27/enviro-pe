@@ -1,3 +1,8 @@
+#ifndef ENVIRO_PE_SRC_TOUCH_DISPATCHER_
+#define ENVIRO_PE_SRC_TOUCH_DISPATCHER_
+
+#include <vector>
+
 #include "Arduino.h"
 #include "XPT2046_Calibrated.h"
 
@@ -50,3 +55,5 @@ private:
 
   XPT2046_Calibrated *const touch_screen_;
 };
+
+#endif // ENVIRO_PE_SRC_TOUCH_DISPATCHER_
