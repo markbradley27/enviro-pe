@@ -4,6 +4,7 @@
 #include "DS3231.h"
 #include "PMserial.h"
 
+#include "elements/root.h"
 #include "ring_buffer.h"
 #include "touch_dispatcher.h"
 #include "util.h"
@@ -45,6 +46,9 @@ XPT2046_Calibrated touch_screen(TOUCH_CS, TOUCH_IRQ);
 TouchDispatcher touch_dispatcher(&touch_screen);
 Adafruit_ILI9341 display(TFT_CS, TFT_DC);
 
+// Cater UI
+Root root_element(&display, &temp_c_values, &humidity_values, &pm25_values);
+
 void setup() {
   // TODO: Figure out why I can't initialize the struct above anymore.
   timer_read_sensors.total_cycle_time = seconds(READ_SENSORS_INTERVAL_S);
@@ -66,13 +70,14 @@ void setup() {
       TS_Point(0, 0), TS_Point(DISPLAY_WIDTH, DISPLAY_HEIGHT),
       [&display](const int16_t x, const int16_t y, const int16_t z) {
         Serial.printf("Touched; x: %d, y: %d, z: %d\r\n", x, y, z);
-        display.fillScreen(ILI9341_BLACK);
+        display.setTextColor(ILI9341_WHITE, ILI9341_BLACK);
         display.setCursor(0, 0);
-        display.setTextColor(ILI9341_WHITE);
         display.setTextSize(1);
         display.println("Touched; x: " + String(x) + ", y: " + String(y) +
                         ", z: " + String(z));
       });
+
+  root_element.Refresh();
 }
 
 void ReadAllSensors() {
@@ -100,6 +105,8 @@ void ReadAllSensors() {
     pm25_values.Insert(pms.pm25, millis());
     Serial.println("PM2.5: " + String(pm25_values.Latest().value));
   }
+
+  root_element.Update();
 }
 
 void loop() {
