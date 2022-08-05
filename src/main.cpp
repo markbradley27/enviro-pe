@@ -1,7 +1,7 @@
-#include "Arduino.h"
 #include "DHTesp.h"
 #include "DS3231.h"
 #include "PMserial.h"
+#include "TFT_eSPI.h"
 
 #include "ring_buffer.h"
 #include "util.h"
@@ -23,6 +23,9 @@ RingBuffer<uint16_t> pm25_values(10 * 60 / READ_SENSORS_INTERVAL_S);
 // DS3231 RTC
 RTClib rtc;
 
+// Display
+TFT_eSPI tft = TFT_eSPI();
+
 // Timers
 Timer timer_read_sensors;
 
@@ -36,6 +39,13 @@ void setup() {
   Wire.begin(); // Required for RTC.
   dht.setup(DHT_DATA_PIN, DHTesp::DHT22);
   pms.init();
+
+  tft.init();
+  tft.setRotation(3);
+
+  // Sanity check display.
+  tft.fillScreen(TFT_CYAN);
+  tft.fillTriangle(10, 10, 20, 10, 10, 20, TFT_DARKGREEN);
 }
 
 void ReadAllSensors() {
