@@ -2,6 +2,7 @@
 #include "DS3231.h"
 #include "PMserial.h"
 #include "TFT_eSPI.h"
+#include "lvgl.h"
 
 #include "ring_buffer.h"
 #include "util.h"
@@ -23,11 +24,35 @@ RingBuffer<uint16_t> pm25_values(10 * 60 / READ_SENSORS_INTERVAL_S);
 // DS3231 RTC
 RTClib rtc;
 
-// Display
-TFT_eSPI tft = TFT_eSPI();
-
 // Timers
 Timer timer_read_sensors;
+
+// Display
+#define DISP_HOR_RES 320
+#define DISP_VER_RES 240
+#define DISP_BUF_SIZE (DISP_HOR_RES * DISP_VER_RES / 10)
+TFT_eSPI tft = TFT_eSPI();
+static lv_disp_draw_buf_t lv_draw_buf;
+static lv_color_t lv_buf[DISP_BUF_SIZE];
+static lv_disp_drv_t lv_disp_drv;
+
+lv_obj_t *screen_main;
+lv_obj_t *label;
+
+void DisplayFlush(lv_disp_drv_t *disp, const lv_area_t *area,
+                  lv_color_t *color_p) {
+  const uint32_t w = area->x2 - area->x1 + 1;
+  const uint32_t h = area->y2 - area->y1 + 1;
+  uint32_t wh = w * h;
+  tft.startWrite();
+  tft.setAddrWindow(area->x1, area->y1, w, h);
+  while (wh--) {
+    tft.pushColor(color_p++->full);
+  }
+  tft.endWrite();
+
+  lv_disp_flush_ready(disp);
+}
 
 void setup() {
   // TODO: Figure out why I can't initialize the struct above anymore.
@@ -46,6 +71,23 @@ void setup() {
   // Sanity check display.
   tft.fillScreen(TFT_CYAN);
   tft.fillTriangle(10, 10, 20, 10, 10, 20, TFT_DARKGREEN);
+
+  lv_init();
+  lv_disp_draw_buf_init(&lv_draw_buf, lv_buf, NULL, DISP_BUF_SIZE);
+  lv_disp_drv_init(&lv_disp_drv);
+  lv_disp_drv.flush_cb = DisplayFlush;
+  lv_disp_drv.draw_buf = &lv_draw_buf;
+  lv_disp_drv.hor_res = DISP_HOR_RES;
+  lv_disp_drv.ver_res = DISP_VER_RES;
+  lv_disp_drv_register(&lv_disp_drv);
+
+  screen_main = lv_obj_create(NULL);
+  label = lv_label_create(screen_main);
+  lv_label_set_text(label, "Herp derp.");
+  lv_obj_set_size(label, 240, 40);
+  lv_obj_set_pos(label, 30, 15);
+
+  lv_scr_load(screen_main);
 }
 
 void ReadAllSensors() {
@@ -76,6 +118,8 @@ void ReadAllSensors() {
 }
 
 void loop() {
+  lv_task_handler();
+
   if (timer_read_sensors.Complete()) {
     timer_read_sensors.Reset();
     ReadAllSensors();
