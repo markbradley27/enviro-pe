@@ -46,9 +46,7 @@ void DisplayFlush(lv_disp_drv_t *disp, const lv_area_t *area,
   uint32_t wh = w * h;
   tft.startWrite();
   tft.setAddrWindow(area->x1, area->y1, w, h);
-  while (wh--) {
-    tft.pushColor(color_p++->full);
-  }
+  tft.pushColors(&color_p->full, w * h, true);
   tft.endWrite();
 
   lv_disp_flush_ready(disp);
