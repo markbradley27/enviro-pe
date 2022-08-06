@@ -35,9 +35,12 @@ TFT_eSPI tft = TFT_eSPI();
 static lv_disp_draw_buf_t lv_draw_buf;
 static lv_color_t lv_buf[DISP_BUF_SIZE];
 static lv_disp_drv_t lv_disp_drv;
+static lv_indev_drv_t lv_indev_drv;
 
 lv_obj_t *screen_main;
 lv_obj_t *label;
+lv_obj_t *btn;
+uint8_t btn_count = 0;
 
 void DisplayFlush(lv_disp_drv_t *disp, const lv_area_t *area,
                   lv_color_t *color_p) {
@@ -50,6 +53,23 @@ void DisplayFlush(lv_disp_drv_t *disp, const lv_area_t *area,
   tft.endWrite();
 
   lv_disp_flush_ready(disp);
+}
+
+void TouchRead(lv_indev_drv_t *indev, lv_indev_data_t *data) {
+  uint16_t x, y;
+  if (tft.getTouch(&x, &y)) {
+    data->state = LV_INDEV_STATE_PRESSED;
+    data->point.x = x;
+    data->point.y = y;
+  } else {
+    data->state = LV_INDEV_STATE_RELEASED;
+  }
+}
+
+void BtnPress(lv_event_t *event) {
+  if (event->code == LV_EVENT_CLICKED) {
+    lv_label_set_text_fmt(label, "Oh yeah, do it again... %d", ++btn_count);
+  }
 }
 
 void setup() {
@@ -65,6 +85,8 @@ void setup() {
 
   tft.init();
   tft.setRotation(3);
+  uint16_t touch_cal_data[5] = {381, 3515, 251, 3528, 1};
+  tft.setTouch(touch_cal_data);
 
   // Sanity check display.
   tft.fillScreen(TFT_CYAN);
@@ -79,11 +101,22 @@ void setup() {
   lv_disp_drv.ver_res = DISP_VER_RES;
   lv_disp_drv_register(&lv_disp_drv);
 
+  lv_indev_drv_init(&lv_indev_drv);
+  lv_indev_drv.type = LV_INDEV_TYPE_POINTER;
+  lv_indev_drv.read_cb = TouchRead;
+  lv_indev_drv_register(&lv_indev_drv);
+
   screen_main = lv_obj_create(NULL);
   label = lv_label_create(screen_main);
-  lv_label_set_text(label, "Herp derp.");
+  lv_label_set_text(label, "Herp derp. Configured in pio.");
   lv_obj_set_size(label, 240, 40);
   lv_obj_set_pos(label, 30, 15);
+
+  btn = lv_btn_create(screen_main);
+  lv_obj_set_width(btn, 50);
+  lv_obj_set_height(btn, 50);
+  lv_obj_set_pos(btn, 50, 60);
+  lv_obj_add_event_cb(btn, BtnPress, LV_EVENT_CLICKED, NULL);
 
   lv_scr_load(screen_main);
 }
