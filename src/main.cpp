@@ -5,6 +5,7 @@
 #include "lvgl.h"
 
 #include "ring_buffer.h"
+#include "ui/screens/arc_dash.h"
 #include "util.h"
 
 #define READ_SENSORS_INTERVAL_S 5
@@ -37,10 +38,7 @@ static lv_color_t lv_buf[DISP_BUF_SIZE];
 static lv_disp_drv_t lv_disp_drv;
 static lv_indev_drv_t lv_indev_drv;
 
-lv_obj_t *screen_main;
-lv_obj_t *label;
-lv_obj_t *btn;
-uint8_t btn_count = 0;
+ArcDash *arc_dash;
 
 void DisplayFlush(lv_disp_drv_t *disp, const lv_area_t *area,
                   lv_color_t *color_p) {
@@ -63,12 +61,6 @@ void TouchRead(lv_indev_drv_t *indev, lv_indev_data_t *data) {
     data->point.y = y;
   } else {
     data->state = LV_INDEV_STATE_RELEASED;
-  }
-}
-
-void BtnPress(lv_event_t *event) {
-  if (event->code == LV_EVENT_CLICKED) {
-    lv_label_set_text_fmt(label, "Oh yeah, do it again... %d", ++btn_count);
   }
 }
 
@@ -106,19 +98,8 @@ void setup() {
   lv_indev_drv.read_cb = TouchRead;
   lv_indev_drv_register(&lv_indev_drv);
 
-  screen_main = lv_obj_create(NULL);
-  label = lv_label_create(screen_main);
-  lv_label_set_text(label, "Herp derp. Configured in pio.");
-  lv_obj_set_size(label, 240, 40);
-  lv_obj_set_pos(label, 30, 15);
-
-  btn = lv_btn_create(screen_main);
-  lv_obj_set_width(btn, 50);
-  lv_obj_set_height(btn, 50);
-  lv_obj_set_pos(btn, 50, 60);
-  lv_obj_add_event_cb(btn, BtnPress, LV_EVENT_CLICKED, NULL);
-
-  lv_scr_load(screen_main);
+  arc_dash = new ArcDash(&temp_c_values, &humidity_values, &pm25_values);
+  lv_scr_load(arc_dash->Screen());
 }
 
 void ReadAllSensors() {
@@ -154,5 +135,6 @@ void loop() {
   if (timer_read_sensors.Complete()) {
     timer_read_sensors.Reset();
     ReadAllSensors();
+    arc_dash->Update();
   }
 }
