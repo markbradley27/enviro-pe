@@ -64,6 +64,35 @@ void TouchRead(lv_indev_drv_t *indev, lv_indev_data_t *data) {
   }
 }
 
+void ReadAllSensors() {
+  Serial.println("Reading sensors...");
+
+  const DateTime now = rtc.now();
+  Serial.println("Time: " + String(now.year()) + "-" + String(now.month()) +
+                 "-" + String(now.day()) + "T" + String(now.hour()) + ":" +
+                 String(now.minute()) + ":" + String(now.second()));
+
+  float temp_c = dht.getTemperature();
+  if (!isnan(temp_c)) {
+    temp_c_values.Insert(temp_c, millis());
+    Serial.println("Temp: " + String(temp_c_values.Latest().value) + "°C, " +
+                   String(CToF(temp_c_values.Latest().value)) + "°F");
+  }
+
+  float humidity = dht.getHumidity();
+  if (!isnan(humidity)) {
+    humidity_values.Insert(humidity, millis());
+    Serial.println("Humidity: " + String(humidity_values.Latest().value) + "%");
+  }
+
+  if (pms.read() == SerialPM::OK) {
+    pm25_values.Insert(pms.pm25, millis());
+    Serial.println("PM2.5: " + String(pm25_values.Latest().value));
+  }
+
+  arc_dash->Update();
+}
+
 void setup() {
   // TODO: Figure out why I can't initialize the struct above anymore.
   timer_read_sensors.total_cycle_time = seconds(READ_SENSORS_INTERVAL_S);
@@ -100,33 +129,8 @@ void setup() {
 
   arc_dash = new ArcDash(&temp_c_values, &humidity_values, &pm25_values);
   lv_scr_load(arc_dash->Screen());
-}
 
-void ReadAllSensors() {
-  Serial.println("Reading sensors...");
-
-  const DateTime now = rtc.now();
-  Serial.println("Time: " + String(now.year()) + "-" + String(now.month()) +
-                 "-" + String(now.day()) + "T" + String(now.hour()) + ":" +
-                 String(now.minute()) + ":" + String(now.second()));
-
-  float temp_c = dht.getTemperature();
-  if (!isnan(temp_c)) {
-    temp_c_values.Insert(temp_c, millis());
-    Serial.println("Temp: " + String(temp_c_values.Latest().value) + "°C, " +
-                   String(CToF(temp_c_values.Latest().value)) + "°F");
-  }
-
-  float humidity = dht.getHumidity();
-  if (!isnan(humidity)) {
-    humidity_values.Insert(humidity, millis());
-    Serial.println("Humidity: " + String(humidity_values.Latest().value) + "%");
-  }
-
-  if (pms.read() == SerialPM::OK) {
-    pm25_values.Insert(pms.pm25, millis());
-    Serial.println("PM2.5: " + String(pm25_values.Latest().value));
-  }
+  ReadAllSensors();
 }
 
 void loop() {
@@ -135,6 +139,5 @@ void loop() {
   if (timer_read_sensors.Complete()) {
     timer_read_sensors.Reset();
     ReadAllSensors();
-    arc_dash->Update();
   }
 }
