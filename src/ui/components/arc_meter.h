@@ -16,7 +16,7 @@ public:
     lv_meter_set_scale_ticks(meter, scale, 0, 0, 0, lv_color_hex3(0x000000));
     lv_meter_set_scale_range(meter, scale, min, max, 300, 120);
 
-    arc = lv_meter_add_arc(meter, scale, 15, lv_palette_main(palette), 10);
+    arc = lv_meter_add_arc(meter, scale, 10, lv_palette_main(palette), 10);
     lv_meter_set_indicator_end_value(meter, arc, (max - min) / 2);
 
     label = lv_label_create(meter);

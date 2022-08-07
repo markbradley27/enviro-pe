@@ -35,7 +35,7 @@ public:
         humid_values_->Average(minutes(MOVING_AVERAGE_MINUTES));
     lv_meter_set_indicator_end_value(humid_meter_.meter, humid_meter_.arc,
                                      humidity);
-    lv_label_set_text_fmt(humid_meter_.label, "%.0f", humidity);
+    lv_label_set_text_fmt(humid_meter_.label, "%.0f%%", humidity);
     const uint16_t pm25 =
         pm25_values_->Average(minutes(MOVING_AVERAGE_MINUTES));
     lv_meter_set_indicator_end_value(aqi_meter_.meter, aqi_meter_.arc, pm25);
