@@ -29,6 +29,7 @@ RTClib rtc;
 Timer timer_read_sensors;
 
 // Display
+#define DISP_BRIGHTNESS_PIN 4
 #define DISP_HOR_RES 320
 #define DISP_VER_RES 240
 #define DISP_BUF_SIZE (DISP_HOR_RES * DISP_VER_RES / 10)
@@ -99,6 +100,9 @@ void setup() {
 
   Serial.begin(115200);
   Serial.println("Heyo!");
+
+  pinMode(DISP_BRIGHTNESS_PIN, OUTPUT);
+  analogWrite(DISP_BRIGHTNESS_PIN, 128);
 
   Wire.begin(); // Required for RTC.
   dht.setup(DHT_DATA_PIN, DHTesp::DHT22);
