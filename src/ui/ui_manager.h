@@ -1,7 +1,7 @@
 #ifndef ENVIRO_PE_SRC_UI_UI_MANAGER_H_
 #define ENVIRO_PE_SRC_UI_UI_MANAGER_H_
 
-#include "ui/screens/arc_dash.h"
+#include "ui/screens/big_numbers.h"
 #include "ui/screens/screen_manager.h"
 
 class UiManager {
@@ -10,7 +10,9 @@ public:
             RingBuffer<uint16_t> *pm25_values)
       : temp_c_values_(temp_c_values), humid_values_(humid_values),
         pm25_values_(pm25_values),
-        screen_manager_(new ArcDash(temp_c_values, humid_values, pm25_values)) {
+        screen_manager_(
+            new BigNumbers(temp_c_values, humid_values, pm25_values)) {
+    InitStyles();
     lv_scr_load(screen_manager_->screen);
   }
 
