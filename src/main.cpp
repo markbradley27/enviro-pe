@@ -5,7 +5,7 @@
 #include "lvgl.h"
 
 #include "ring_buffer.h"
-#include "ui/screens/arc_dash.h"
+#include "ui/ui_manager.h"
 #include "util.h"
 
 #define READ_SENSORS_INTERVAL_S 5
@@ -39,7 +39,7 @@ static lv_color_t lv_buf[DISP_BUF_SIZE];
 static lv_disp_drv_t lv_disp_drv;
 static lv_indev_drv_t lv_indev_drv;
 
-ArcDash *arc_dash;
+UiManager *ui_manager;
 
 void DisplayFlush(lv_disp_drv_t *disp, const lv_area_t *area,
                   lv_color_t *color_p) {
@@ -91,7 +91,7 @@ void ReadAllSensors() {
     Serial.println("PM2.5: " + String(pm25_values.Latest().value));
   }
 
-  arc_dash->Update();
+  ui_manager->UpdateMeasurements();
 }
 
 void setup() {
@@ -131,8 +131,7 @@ void setup() {
   lv_indev_drv.read_cb = TouchRead;
   lv_indev_drv_register(&lv_indev_drv);
 
-  arc_dash = new ArcDash(&temp_c_values, &humidity_values, &pm25_values);
-  lv_scr_load(arc_dash->Screen());
+  ui_manager = new UiManager(&temp_c_values, &humidity_values, &pm25_values);
 
   ReadAllSensors();
 }

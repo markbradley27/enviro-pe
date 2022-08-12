@@ -6,15 +6,16 @@
 #include "ui/components/aqi_meter.h"
 #include "ui/components/humid_meter.h"
 #include "ui/components/temp_meter.h"
+#include "ui/screens/screen_manager.h"
 #include "util.h"
 
-class ArcDash {
+class ArcDash : public ScreenManager {
 public:
   ArcDash(RingBuffer<float> *temp_c_values, RingBuffer<float> *humid_values,
           RingBuffer<uint16_t> *pm25_values)
       : temp_c_values_(temp_c_values), humid_values_(humid_values),
-        pm25_values_(pm25_values), screen_(lv_obj_create(NULL)),
-        temp_meter_(screen_), humid_meter_(screen_), aqi_meter_(screen_) {
+        pm25_values_(pm25_values), temp_meter_(screen), humid_meter_(screen),
+        aqi_meter_(screen) {
 
     lv_obj_align(temp_meter_.meter, LV_ALIGN_CENTER, -ARC_X_OFFSET,
                  ARC_Y_OFFSET);
@@ -23,9 +24,7 @@ public:
     lv_obj_align(aqi_meter_.meter, LV_ALIGN_CENTER, 0, -ARC_Y_OFFSET);
   }
 
-  lv_obj_t *Screen() { return screen_; }
-
-  void Update() {
+  void UpdateMeasurements() override {
     const float temp_f =
         CToF(temp_c_values_->Average(minutes(MOVING_AVERAGE_MINUTES)));
     lv_meter_set_indicator_end_value(temp_meter_.meter, temp_meter_.arc,
@@ -50,8 +49,6 @@ private:
   RingBuffer<float> *temp_c_values_;
   RingBuffer<float> *humid_values_;
   RingBuffer<uint16_t> *pm25_values_;
-
-  lv_obj_t *screen_;
 
   TempMeter temp_meter_;
   HumidMeter humid_meter_;
