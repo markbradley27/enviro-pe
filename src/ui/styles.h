@@ -3,6 +3,8 @@
 
 #include "lvgl.h"
 
+#include "montserrat_semibold_70.h"
+
 static lv_style_t big_number_container_style;
 static lv_style_t big_number_content_style;
 static lv_style_t big_number_style;
@@ -26,7 +28,7 @@ void InitStyles() {
   lv_style_set_pad_all(&big_number_content_style, 0);
 
   lv_style_init(&big_number_style);
-  lv_style_set_text_font(&big_number_style, &lv_font_montserrat_48);
+  lv_style_set_text_font(&big_number_style, &montserrat_semibold_70);
 
   lv_style_init(&temp_color_style);
   lv_style_set_text_color(&temp_color_style,
