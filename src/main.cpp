@@ -32,7 +32,7 @@ Timer timer_read_sensors;
 #define DISP_BRIGHTNESS_PIN 4
 #define DISP_HOR_RES 320
 #define DISP_VER_RES 240
-#define DISP_BUF_SIZE (DISP_HOR_RES * DISP_VER_RES / 10)
+#define DISP_BUF_SIZE (DISP_HOR_RES * DISP_VER_RES / 4)
 TFT_eSPI tft = TFT_eSPI();
 static lv_disp_draw_buf_t lv_draw_buf;
 static lv_color_t lv_buf[DISP_BUF_SIZE];
