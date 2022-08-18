@@ -3,11 +3,14 @@
 
 #include "lvgl.h"
 
-#include "montserrat_semibold_70.h"
+LV_FONT_DECLARE(montserrat_semibold_70);
+LV_FONT_DECLARE(trend_symbols);
 
 static lv_style_t big_number_container_style;
 static lv_style_t big_number_content_style;
 static lv_style_t big_number_style;
+static lv_style_t big_number_trend_style;
+static lv_style_t big_number_divider_style;
 
 static lv_style_t temp_color_style;
 static lv_style_t humid_color_style;
@@ -29,6 +32,13 @@ void InitStyles() {
 
   lv_style_init(&big_number_style);
   lv_style_set_text_font(&big_number_style, &montserrat_semibold_70);
+
+  lv_style_init(&big_number_trend_style);
+  lv_style_set_text_font(&big_number_trend_style, &trend_symbols);
+
+  lv_style_init(&big_number_divider_style);
+  lv_style_set_text_color(&big_number_divider_style,
+                          lv_palette_lighten(LV_PALETTE_GREY, 1));
 
   lv_style_init(&temp_color_style);
   lv_style_set_text_color(&temp_color_style,
