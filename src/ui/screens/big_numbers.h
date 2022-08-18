@@ -22,29 +22,21 @@ public:
 
     lv_obj_t *content = lv_win_get_content(window);
     lv_obj_add_style(content, &big_number_content_style, LV_PART_MAIN);
-    lv_obj_set_layout(content, LV_LAYOUT_GRID);
-    static const lv_coord_t column_dsc[4] = {
-        LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-    static const lv_coord_t row_dsc[2] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-    lv_obj_set_grid_dsc_array(content, column_dsc, row_dsc);
 
-    lv_obj_t *left_cell = lv_obj_create(content);
-    lv_obj_add_style(left_cell, &big_number_container_style, LV_PART_MAIN);
-    lv_obj_set_grid_cell(left_cell, LV_GRID_ALIGN_CENTER, 0, 1,
-                         LV_GRID_ALIGN_CENTER, 0, 1);
-    temp_ = new TempBigNumber(left_cell, temp_c_values);
+    lv_obj_t *temp_obj = lv_obj_create(content);
+    lv_obj_add_style(temp_obj, &big_number_container_style, LV_PART_MAIN);
+    lv_obj_align(temp_obj, LV_ALIGN_CENTER, 0, 0);
+    temp_ = new TempBigNumber(temp_obj, temp_c_values);
 
-    lv_obj_t *mid_cell = lv_obj_create(content);
-    lv_obj_add_style(mid_cell, &big_number_container_style, LV_PART_MAIN);
-    lv_obj_set_grid_cell(mid_cell, LV_GRID_ALIGN_CENTER, 1, 1,
-                         LV_GRID_ALIGN_CENTER, 0, 1);
-    humid_ = new HumidBigNumber(mid_cell, humid_values_);
+    lv_obj_t *humid_obj = lv_obj_create(content);
+    lv_obj_add_style(humid_obj, &big_number_container_style, LV_PART_MAIN);
+    lv_obj_align(humid_obj, LV_ALIGN_CENTER, -X_OFFSET, 0);
+    humid_ = new HumidBigNumber(humid_obj, humid_values_);
 
-    lv_obj_t *right_cell = lv_obj_create(content);
-    lv_obj_add_style(right_cell, &big_number_container_style, LV_PART_MAIN);
-    lv_obj_set_grid_cell(right_cell, LV_GRID_ALIGN_CENTER, 2, 1,
-                         LV_GRID_ALIGN_CENTER, 0, 1);
-    aqi_ = new AqiBigNumber(right_cell, pm25_values_);
+    lv_obj_t *aqi_obj = lv_obj_create(content);
+    lv_obj_add_style(aqi_obj, &big_number_container_style, LV_PART_MAIN);
+    lv_obj_align(aqi_obj, LV_ALIGN_CENTER, X_OFFSET, 0);
+    aqi_ = new AqiBigNumber(aqi_obj, pm25_values_);
   }
 
   ~BigNumbers() {
@@ -67,12 +59,7 @@ public:
 
 private:
   static const uint8_t HEADER_HEIGHT = 40;
-  /*
-  static constexpr lv_coord_t COLUMN_DSC[4] = {320 / 3, 320 / 3, 320 / 3,
-                                               LV_GRID_TEMPLATE_LAST};
-  static constexpr lv_coord_t ROW_DSC[2] = {240 - HEADER_HEIGHT,
-                                            LV_GRID_TEMPLATE_LAST};
-                                            */
+  static const uint8_t X_OFFSET = 106;
 
   RingBuffer<float> *const temp_c_values_;
   RingBuffer<float> *const humid_values_;

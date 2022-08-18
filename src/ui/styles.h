@@ -15,13 +15,13 @@ static lv_style_t aqi_color_style;
 
 void InitStyles() {
   lv_style_init(&big_number_container_style);
-  /*
-  lv_style_set_width(&big_number_container_style, lv_pct(33));
-  */
-  lv_style_set_height(&big_number_container_style, lv_pct(100));
+  lv_style_set_width(&big_number_container_style, 104);
+  lv_style_set_height(&big_number_container_style, lv_pct(98));
   lv_style_set_outline_width(&big_number_container_style, 0);
   lv_style_set_outline_pad(&big_number_container_style, 0);
-  lv_style_set_border_width(&big_number_container_style, 0);
+  lv_style_set_border_width(&big_number_container_style, 1);
+  lv_style_set_border_color(&big_number_container_style,
+                            lv_palette_lighten(LV_PALETTE_GREY, 1));
   lv_style_set_pad_all(&big_number_container_style, 0);
 
   lv_style_init(&big_number_content_style);
