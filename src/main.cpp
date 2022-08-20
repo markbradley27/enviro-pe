@@ -8,25 +8,27 @@
 #include "ui/ui_manager.h"
 #include "util.h"
 
-#define READ_SENSORS_INTERVAL_S 5
-
 // DHT22 Temp/Humidity sensor
 #define DHT_DATA_PIN 13
 DHTesp dht;
-RingBuffer<float> temp_c_values(10 * 60 / READ_SENSORS_INTERVAL_S);
-RingBuffer<float> humidity_values(10 * 60 / READ_SENSORS_INTERVAL_S);
+RingBuffer<float> temp_c_5s_values(10 * 60 / 5);   // 10 minutes worth
+RingBuffer<float> temp_c_5m_avgs(24 * 60 / 5);     // 24 hours worth
+RingBuffer<float> humidity_5s_values(10 * 60 / 5); // 10 minutes worth
+RingBuffer<float> humidity_5m_avgs(24 * 60 / 5);   // 24 hours worth
 
 // PMS5003 AQI sensor
 #define PMS_RX 32
 #define PMS_TX 33
 SerialPM pms(PMSx003, PMS_RX, PMS_TX);
-RingBuffer<uint16_t> pm25_values(10 * 60 / READ_SENSORS_INTERVAL_S);
+RingBuffer<uint16_t> pm25_5s_values(10 * 60 / 5); // 10 minutes worth
+RingBuffer<uint16_t> pm25_5m_avgs(24 * 60 / 5);   // 24 hours worth
 
 // DS3231 RTC
 RTClib rtc;
 
 // Timers
-Timer timer_read_sensors;
+Timer every_5_sec;
+Timer every_5_min;
 
 // Display
 #define DISP_BRIGHTNESS_PIN 4
@@ -75,20 +77,28 @@ void ReadAllSensors() {
 
   float temp_c = dht.getTemperature();
   if (!isnan(temp_c)) {
-    temp_c_values.Insert(temp_c, millis());
-    Serial.println("Temp: " + String(temp_c_values.Latest().value) + "°C, " +
-                   String(CToF(temp_c_values.Latest().value)) + "°F");
+    temp_c_5s_values.Insert(temp_c, millis());
+    Serial.println("Temp: " + String(temp_c_5s_values.Latest().value) + "°C, " +
+                   String(CToF(temp_c_5s_values.Latest().value)) + "°F");
+  } else {
+    Serial.println("Error reading temperature.");
   }
 
   float humidity = dht.getHumidity();
   if (!isnan(humidity)) {
-    humidity_values.Insert(humidity, millis());
-    Serial.println("Humidity: " + String(humidity_values.Latest().value) + "%");
+    humidity_5s_values.Insert(humidity, millis());
+    Serial.println("Humidity: " + String(humidity_5s_values.Latest().value) +
+                   "%");
+  } else {
+    Serial.println("Error reading humidity.");
   }
 
-  if (pms.read() == SerialPM::OK) {
-    pm25_values.Insert(pms.pm25, millis());
-    Serial.println("PM2.5: " + String(pm25_values.Latest().value));
+  const auto pm25_status = pms.read();
+  if (pm25_status == SerialPM::OK) {
+    pm25_5s_values.Insert(pms.pm25, millis());
+    Serial.println("PM2.5: " + String(pm25_5s_values.Latest().value));
+  } else {
+    Serial.println("Error reading pm25: " + String(pm25_status));
   }
 
   ui_manager->UpdateMeasurements();
@@ -96,7 +106,8 @@ void ReadAllSensors() {
 
 void setup() {
   // TODO: Figure out why I can't initialize the struct above anymore.
-  timer_read_sensors.total_cycle_time = seconds(READ_SENSORS_INTERVAL_S);
+  every_5_sec.total_cycle_time = seconds(5);
+  every_5_min.total_cycle_time = minutes(5);
 
   Serial.begin(115200);
   Serial.println("Heyo!");
@@ -131,7 +142,9 @@ void setup() {
   lv_indev_drv.read_cb = TouchRead;
   lv_indev_drv_register(&lv_indev_drv);
 
-  ui_manager = new UiManager(&temp_c_values, &humidity_values, &pm25_values);
+  ui_manager =
+      new UiManager(&temp_c_5s_values, &temp_c_5m_avgs, &humidity_5s_values,
+                    &humidity_5m_avgs, &pm25_5s_values, &pm25_5m_avgs);
 
   ReadAllSensors();
 }
@@ -139,8 +152,16 @@ void setup() {
 void loop() {
   lv_task_handler();
 
-  if (timer_read_sensors.Complete()) {
-    timer_read_sensors.Reset();
+  if (every_5_sec.Complete()) {
+    every_5_sec.Reset();
     ReadAllSensors();
+  }
+
+  if (every_5_min.Complete()) {
+    every_5_min.Reset();
+    const uint32_t now_millis = millis();
+    temp_c_5m_avgs.Insert(temp_c_5s_values.Average(minutes(5)), now_millis);
+    humidity_5m_avgs.Insert(humidity_5s_values.Average(minutes(5)), now_millis);
+    pm25_5m_avgs.Insert(pm25_5s_values.Average(minutes(5)), now_millis);
   }
 }
