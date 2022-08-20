@@ -9,6 +9,7 @@
 #include "ui/screens/screen_manager.h"
 #include "ui/styles.h"
 
+static void big_number_handler(lv_event_t *e);
 static void settings_btn_handler(lv_event_t *e);
 
 class BigNumbers : public ScreenManager {
@@ -19,11 +20,13 @@ public:
              RingBuffer<float> *humid_5m_avgs,
              RingBuffer<uint16_t> *pm25_5s_values,
              RingBuffer<uint16_t> *pm25_5m_avgs,
-             std::function<void()> switch_to_settings)
+             std::function<void()> switch_to_settings,
+             std::function<void()> switch_to_graphs)
       : temp_c_5s_values_(temp_c_5s_values), temp_c_5m_avgs_(temp_c_5m_avgs),
         humid_5s_values_(humid_5s_values), humid_5m_avgs_(humid_5m_avgs),
         pm25_5s_values_(pm25_5s_values), pm25_5m_avgs_(pm25_5m_avgs),
-        switch_to_settings(switch_to_settings) {
+        switch_to_settings(switch_to_settings),
+        switch_to_graphs(switch_to_graphs) {
 
     lv_obj_t *window = lv_win_create(screen, HEADER_HEIGHT);
 
@@ -38,16 +41,19 @@ public:
     lv_obj_t *temp_obj = lv_obj_create(content);
     lv_obj_add_style(temp_obj, &big_number_container_style, LV_PART_MAIN);
     lv_obj_align(temp_obj, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_add_event_cb(temp_obj, big_number_handler, LV_EVENT_CLICKED, this);
     temp_ = new TempBigNumber(temp_obj, temp_c_5s_values, temp_c_5m_avgs);
 
     lv_obj_t *humid_obj = lv_obj_create(content);
     lv_obj_add_style(humid_obj, &big_number_container_style, LV_PART_MAIN);
     lv_obj_align(humid_obj, LV_ALIGN_CENTER, -X_OFFSET, 0);
+    lv_obj_add_event_cb(humid_obj, big_number_handler, LV_EVENT_CLICKED, this);
     humid_ = new HumidBigNumber(humid_obj, humid_5s_values, humid_5m_avgs);
 
     lv_obj_t *aqi_obj = lv_obj_create(content);
     lv_obj_add_style(aqi_obj, &big_number_container_style, LV_PART_MAIN);
     lv_obj_align(aqi_obj, LV_ALIGN_CENTER, X_OFFSET, 0);
+    lv_obj_add_event_cb(aqi_obj, big_number_handler, LV_EVENT_CLICKED, this);
     aqi_ = new AqiBigNumber(aqi_obj, pm25_5s_values, pm25_5m_avgs);
   }
 
@@ -70,6 +76,7 @@ public:
   }
 
   std::function<void()> switch_to_settings;
+  std::function<void()> switch_to_graphs;
 
 private:
   static const uint8_t X_OFFSET = 106;
@@ -85,6 +92,10 @@ private:
   HumidBigNumber *humid_ = NULL;
   AqiBigNumber *aqi_ = NULL;
 };
+
+static void big_number_handler(lv_event_t *e) {
+  ((BigNumbers *)lv_event_get_user_data(e))->switch_to_graphs();
+}
 
 static void settings_btn_handler(lv_event_t *e) {
   ((BigNumbers *)lv_event_get_user_data(e))->switch_to_settings();
