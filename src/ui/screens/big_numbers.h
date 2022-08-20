@@ -9,6 +9,8 @@
 #include "ui/screens/screen_manager.h"
 #include "ui/styles.h"
 
+static void settings_btn_handler(lv_event_t *e);
+
 class BigNumbers : public ScreenManager {
 public:
   BigNumbers(RingBuffer<float> *temp_c_5s_values,
@@ -16,14 +18,19 @@ public:
              RingBuffer<float> *humid_5s_values,
              RingBuffer<float> *humid_5m_avgs,
              RingBuffer<uint16_t> *pm25_5s_values,
-             RingBuffer<uint16_t> *pm25_5m_avgs)
+             RingBuffer<uint16_t> *pm25_5m_avgs,
+             std::function<void()> switch_to_settings)
       : temp_c_5s_values_(temp_c_5s_values), temp_c_5m_avgs_(temp_c_5m_avgs),
         humid_5s_values_(humid_5s_values), humid_5m_avgs_(humid_5m_avgs),
-        pm25_5s_values_(pm25_5s_values), pm25_5m_avgs_(pm25_5m_avgs) {
+        pm25_5s_values_(pm25_5s_values), pm25_5m_avgs_(pm25_5m_avgs),
+        switch_to_settings(switch_to_settings) {
 
     lv_obj_t *window = lv_win_create(screen, HEADER_HEIGHT);
 
-    lv_win_add_title(window, "Big Numbers");
+    lv_obj_t *settings_btn =
+        lv_win_add_btn(window, LV_SYMBOL_SETTINGS, HEADER_HEIGHT);
+    lv_obj_add_event_cb(settings_btn, settings_btn_handler, LV_EVENT_CLICKED,
+                        this);
 
     lv_obj_t *content = lv_win_get_content(window);
     lv_obj_add_style(content, &big_number_content_style, LV_PART_MAIN);
@@ -62,8 +69,9 @@ public:
     aqi_->Update();
   }
 
+  std::function<void()> switch_to_settings;
+
 private:
-  static const uint8_t HEADER_HEIGHT = 40;
   static const uint8_t X_OFFSET = 106;
 
   RingBuffer<float> *const temp_c_5s_values_;
@@ -77,5 +85,9 @@ private:
   HumidBigNumber *humid_ = NULL;
   AqiBigNumber *aqi_ = NULL;
 };
+
+static void settings_btn_handler(lv_event_t *e) {
+  ((BigNumbers *)lv_event_get_user_data(e))->switch_to_settings();
+}
 
 #endif // ENVIRO_PE_SRC_UI_SCREENS_BIG_NUMBERS_H_
