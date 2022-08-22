@@ -28,33 +28,30 @@ public:
   void UpdateMeasurements() { screen_manager_->UpdateMeasurements(); }
 
   void SwitchToBigNumbers() {
-    if (screen_manager_ != NULL) {
-      delete screen_manager_;
-    }
-    screen_manager_ =
+    ScreenManager *new_screen_manager =
         new BigNumbers(temp_c_5s_values_, temp_c_5m_avgs_, humid_5s_values_,
                        humid_5m_avgs_, pm25_5s_values_, pm25_5m_avgs_,
                        std::bind(&UiManager::SwitchToSettings, this),
                        std::bind(&UiManager::SwitchToGraphs, this));
-    lv_scr_load(screen_manager_->screen);
+    lv_scr_load(new_screen_manager->screen);
+    delete screen_manager_;
+    screen_manager_ = new_screen_manager;
   }
 
   void SwitchToSettings() {
-    if (screen_manager_ != NULL) {
-      delete screen_manager_;
-    }
-    screen_manager_ =
+    ScreenManager *new_screen_manager =
         new Settings(std::bind(&UiManager::SwitchToBigNumbers, this));
-    lv_scr_load(screen_manager_->screen);
+    lv_scr_load(new_screen_manager->screen);
+    delete screen_manager_;
+    screen_manager_ = new_screen_manager;
   }
 
   void SwitchToGraphs() {
-    if (screen_manager_ != NULL) {
-      delete screen_manager_;
-    }
-    screen_manager_ =
-        new Graphs(std::bind(&UiManager::SwitchToBigNumbers, this));
-    lv_scr_load(screen_manager_->screen);
+    ScreenManager *new_screen_manager = new Graphs(
+        std::bind(&UiManager::SwitchToBigNumbers, this));
+    lv_scr_load(new_screen_manager->screen);
+    delete screen_manager_;
+    screen_manager_ = new_screen_manager;
   }
 
 private:
