@@ -47,8 +47,9 @@ public:
   }
 
   void SwitchToGraphs() {
+    // TODO: Pass in 5m avgs instead of 5s values.
     ScreenManager *new_screen_manager = new Graphs(
-        std::bind(&UiManager::SwitchToBigNumbers, this));
+        temp_c_5s_values_, std::bind(&UiManager::SwitchToBigNumbers, this));
     lv_scr_load(new_screen_manager->screen);
     delete screen_manager_;
     screen_manager_ = new_screen_manager;

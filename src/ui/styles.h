@@ -16,6 +16,9 @@ static lv_style_t temp_color_style;
 static lv_style_t humid_color_style;
 static lv_style_t aqi_color_style;
 
+static lv_style_t graph_title_style;
+static lv_style_t graph_point_style;
+
 void InitStyles() {
   lv_style_init(&big_number_container_style);
   lv_style_set_width(&big_number_container_style, 104);
@@ -51,6 +54,14 @@ void InitStyles() {
   lv_style_init(&aqi_color_style);
   lv_style_set_text_color(&aqi_color_style,
                           lv_palette_darken(LV_PALETTE_GREEN, 2));
+
+  lv_style_init(&graph_title_style);
+  lv_style_set_text_align(&graph_title_style, LV_TEXT_ALIGN_CENTER);
+
+  lv_style_init(&graph_point_style);
+  lv_style_set_width(&graph_point_style, 0);
+  lv_style_set_height(&graph_point_style, 0);
+  lv_style_set_radius(&graph_point_style, 0);
 }
 
 #endif // ENVIRO_PE_SRC_UI_STYLES_H_
