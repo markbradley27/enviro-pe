@@ -8,7 +8,7 @@ public:
   AqiGraph(RingBuffer<uint16_t> *const pm25_5m_avgs,
            std::function<void()> switch_to_big_numbers)
       : pm25_5m_avgs_(pm25_5m_avgs), Graph(switch_to_big_numbers) {
-    lv_label_set_text(title_, "AQI");
+    lv_label_set_text(title_, "AQI (pm2.5)");
 
     lv_chart_set_range(chart_, LV_CHART_AXIS_PRIMARY_Y, 0, 100);
     lv_chart_set_axis_tick(chart_, LV_CHART_AXIS_PRIMARY_Y, 5, 0, 11, 1, true,

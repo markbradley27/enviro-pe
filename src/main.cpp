@@ -5,6 +5,7 @@
 #include "lvgl.h"
 
 #include "ring_buffer.h"
+#include "settings/brightness_manager.h"
 #include "ui/ui_manager.h"
 #include "util.h"
 
@@ -32,7 +33,6 @@ Timer every_5_sec;
 Timer every_5_min;
 
 // Display
-#define DISP_BRIGHTNESS_PIN 4
 #define DISP_HOR_RES 320
 #define DISP_VER_RES 240
 #define DISP_BUF_SIZE (DISP_HOR_RES * DISP_VER_RES / 4)
@@ -67,6 +67,10 @@ void TouchRead(lv_indev_drv_t *indev, lv_indev_data_t *data) {
     data->state = LV_INDEV_STATE_RELEASED;
   }
 }
+
+// Settings
+#define DISP_BRIGHTNESS_PIN 4
+BrightnessManager brightness_manager(DISP_BRIGHTNESS_PIN);
 
 void ReadAllSensors() {
   Serial.println("Reading sensors...");
@@ -109,9 +113,6 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Heyo!");
 
-  pinMode(DISP_BRIGHTNESS_PIN, OUTPUT);
-  analogWrite(DISP_BRIGHTNESS_PIN, 128);
-
   Wire.begin(); // Required for RTC.
   dht.setup(DHT_DATA_PIN, DHTesp::DHT22);
   pms.init();
@@ -139,9 +140,9 @@ void setup() {
   lv_indev_drv.read_cb = TouchRead;
   lv_indev_drv_register(&lv_indev_drv);
 
-  ui_manager = new UiManager(&rtc, &temp_c_5s_values, &temp_c_5m_avgs,
-                             &humidity_5s_values, &humidity_5m_avgs,
-                             &pm25_5s_values, &pm25_5m_avgs);
+  ui_manager = new UiManager(&rtc, &brightness_manager, &temp_c_5s_values,
+                             &temp_c_5m_avgs, &humidity_5s_values,
+                             &humidity_5m_avgs, &pm25_5s_values, &pm25_5m_avgs);
 
   ReadAllSensors();
 }

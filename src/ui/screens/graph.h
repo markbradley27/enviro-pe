@@ -31,7 +31,7 @@ public:
                         this);
 
     title_ = lv_win_add_title(window, "---");
-    lv_obj_add_style(title_, &graph_title_style, LV_PART_MAIN);
+    lv_obj_add_style(title_, &centered_title_style, LV_PART_MAIN);
 
     lv_obj_t *zoom_out_btn =
         lv_win_add_btn(window, LV_SYMBOL_MINUS, HEADER_HEIGHT);

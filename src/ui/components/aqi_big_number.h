@@ -10,7 +10,7 @@ class AqiBigNumber : public BigNumber {
 public:
   AqiBigNumber(lv_obj_t *parent, RingBuffer<uint16_t> *const pm25_5s_values,
                RingBuffer<uint16_t> *const pm25_5m_avgs)
-      : BigNumber(parent, "AQI"), pm25_5s_values_(pm25_5s_values),
+      : BigNumber(parent, "AQI (pm2.5)"), pm25_5s_values_(pm25_5s_values),
         pm25_5m_avgs_(pm25_5m_avgs) {
     lv_obj_add_style(big_number_, &aqi_color_style, LV_PART_MAIN);
     lv_obj_add_style(trend_icon_, &aqi_color_style, LV_PART_MAIN);

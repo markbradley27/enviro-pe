@@ -8,7 +8,7 @@ public:
   TempGraph(RingBuffer<float> *const temp_c_5m_avgs,
             std::function<void()> switch_to_big_numbers)
       : temp_c_5m_avgs_(temp_c_5m_avgs), Graph(switch_to_big_numbers) {
-    lv_label_set_text(title_, "Temp (°F)");
+    lv_label_set_text(title_, "Temperature (°F)");
 
     lv_chart_set_range(chart_, LV_CHART_AXIS_PRIMARY_Y, 30, 100);
     lv_chart_set_axis_tick(chart_, LV_CHART_AXIS_PRIMARY_Y, 5, 0, 8, 1, true,
