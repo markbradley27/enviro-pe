@@ -6,6 +6,7 @@
 LV_FONT_DECLARE(montserrat_semibold_70);
 LV_FONT_DECLARE(trend_symbols);
 
+static lv_style_t big_number_digital_clock_style;
 static lv_style_t big_number_container_style;
 static lv_style_t big_number_content_style;
 static lv_style_t big_number_style;
@@ -20,6 +21,13 @@ static lv_style_t graph_title_style;
 static lv_style_t graph_point_style;
 
 void InitStyles() {
+  lv_style_init(&big_number_digital_clock_style);
+  lv_style_set_text_align(&big_number_digital_clock_style, LV_TEXT_ALIGN_RIGHT);
+  lv_style_set_text_font(&big_number_digital_clock_style,
+                         &lv_font_montserrat_32);
+  lv_style_set_text_color(&big_number_digital_clock_style,
+                          lv_palette_darken(LV_PALETTE_GREY, 2));
+
   lv_style_init(&big_number_container_style);
   lv_style_set_width(&big_number_container_style, 104);
   lv_style_set_height(&big_number_container_style, lv_pct(98));

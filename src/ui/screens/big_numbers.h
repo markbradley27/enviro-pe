@@ -4,6 +4,7 @@
 #include "lvgl.h"
 #include "ring_buffer.h"
 #include "ui/components/aqi_big_number.h"
+#include "ui/components/digital_clock.h"
 #include "ui/components/humid_big_number.h"
 #include "ui/components/temp_big_number.h"
 #include "ui/screens/screen_manager.h"
@@ -16,7 +17,7 @@ static void temp_big_number_handler(lv_event_t *e);
 
 class BigNumbers : public ScreenManager {
 public:
-  BigNumbers(RingBuffer<float> *temp_c_5s_values,
+  BigNumbers(DS3231 *const rtc, RingBuffer<float> *temp_c_5s_values,
              RingBuffer<float> *temp_c_5m_avgs,
              RingBuffer<float> *humid_5s_values,
              RingBuffer<float> *humid_5m_avgs,
@@ -26,10 +27,10 @@ public:
              std::function<void()> switch_to_aqi_graph,
              std::function<void()> switch_to_humid_graph,
              std::function<void()> switch_to_temp_graph)
-      : temp_c_5s_values_(temp_c_5s_values), temp_c_5m_avgs_(temp_c_5m_avgs),
-        humid_5s_values_(humid_5s_values), humid_5m_avgs_(humid_5m_avgs),
-        pm25_5s_values_(pm25_5s_values), pm25_5m_avgs_(pm25_5m_avgs),
-        switch_to_settings(switch_to_settings),
+      : rtc_(rtc), temp_c_5s_values_(temp_c_5s_values),
+        temp_c_5m_avgs_(temp_c_5m_avgs), humid_5s_values_(humid_5s_values),
+        humid_5m_avgs_(humid_5m_avgs), pm25_5s_values_(pm25_5s_values),
+        pm25_5m_avgs_(pm25_5m_avgs), switch_to_settings(switch_to_settings),
         switch_to_aqi_graph(switch_to_aqi_graph),
         switch_to_humid_graph(switch_to_humid_graph),
         switch_to_temp_graph(switch_to_temp_graph) {
@@ -40,6 +41,11 @@ public:
         lv_win_add_btn(window, LV_SYMBOL_SETTINGS, HEADER_HEIGHT);
     lv_obj_add_event_cb(settings_btn, settings_btn_handler, LV_EVENT_CLICKED,
                         this);
+
+    lv_obj_t *digital_clock = lv_win_add_title(window, "--:--");
+    lv_obj_add_style(digital_clock, &big_number_digital_clock_style,
+                     LV_PART_MAIN);
+    clock_ = new DigitalClock(digital_clock, rtc_);
 
     lv_obj_t *content = lv_win_get_content(window);
     lv_obj_add_style(content, &big_number_content_style, LV_PART_MAIN);
@@ -67,6 +73,9 @@ public:
   }
 
   ~BigNumbers() {
+    if (clock_ != NULL) {
+      delete clock_;
+    }
     if (temp_ != NULL) {
       delete temp_;
     }
@@ -84,6 +93,8 @@ public:
     aqi_->Update();
   }
 
+  void UpdateTime() { clock_->UpdateTime(); }
+
   std::function<void()> switch_to_settings;
   std::function<void()> switch_to_aqi_graph;
   std::function<void()> switch_to_humid_graph;
@@ -92,12 +103,16 @@ public:
 private:
   static const uint8_t X_OFFSET = 106;
 
+  DS3231 *const rtc_;
+
   RingBuffer<float> *const temp_c_5s_values_;
   RingBuffer<float> *const temp_c_5m_avgs_;
   RingBuffer<float> *const humid_5s_values_;
   RingBuffer<float> *const humid_5m_avgs_;
   RingBuffer<uint16_t> *const pm25_5s_values_;
   RingBuffer<uint16_t> *const pm25_5m_avgs_;
+
+  DigitalClock *clock_ = NULL;
 
   TempBigNumber *temp_ = NULL;
   HumidBigNumber *humid_ = NULL;

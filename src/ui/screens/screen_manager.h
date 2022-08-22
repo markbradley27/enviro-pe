@@ -10,7 +10,10 @@ public:
 
   // Call to indicate that new measurements were just taken and the UI should
   // update to reflect them.
-  virtual void UpdateMeasurements() = 0;
+  virtual void UpdateMeasurements(){};
+
+  // Call to update any time displays.
+  virtual void UpdateTime(){};
 
   lv_obj_t *screen;
 

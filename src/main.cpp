@@ -24,9 +24,10 @@ RingBuffer<uint16_t> pm25_5s_values(10 * 60 / 5); // 10 minutes worth
 RingBuffer<uint16_t> pm25_5m_avgs(24 * 60 / 5);   // 24 hours worth
 
 // DS3231 RTC
-RTClib rtc;
+DS3231 rtc;
 
 // Timers
+Timer every_1_sec;
 Timer every_5_sec;
 Timer every_5_min;
 
@@ -70,11 +71,6 @@ void TouchRead(lv_indev_drv_t *indev, lv_indev_data_t *data) {
 void ReadAllSensors() {
   Serial.println("Reading sensors...");
 
-  const DateTime now = rtc.now();
-  Serial.println("Time: " + String(now.year()) + "-" + String(now.month()) +
-                 "-" + String(now.day()) + "T" + String(now.hour()) + ":" +
-                 String(now.minute()) + ":" + String(now.second()));
-
   float temp_c = dht.getTemperature();
   if (!isnan(temp_c)) {
     temp_c_5s_values.Insert(temp_c, millis());
@@ -106,6 +102,7 @@ void ReadAllSensors() {
 
 void setup() {
   // TODO: Figure out why I can't initialize the struct above anymore.
+  every_1_sec.total_cycle_time = seconds(1);
   every_5_sec.total_cycle_time = seconds(5);
   every_5_min.total_cycle_time = minutes(5);
 
@@ -142,15 +139,25 @@ void setup() {
   lv_indev_drv.read_cb = TouchRead;
   lv_indev_drv_register(&lv_indev_drv);
 
-  ui_manager =
-      new UiManager(&temp_c_5s_values, &temp_c_5m_avgs, &humidity_5s_values,
-                    &humidity_5m_avgs, &pm25_5s_values, &pm25_5m_avgs);
+  ui_manager = new UiManager(&rtc, &temp_c_5s_values, &temp_c_5m_avgs,
+                             &humidity_5s_values, &humidity_5m_avgs,
+                             &pm25_5s_values, &pm25_5m_avgs);
 
   ReadAllSensors();
 }
 
 void loop() {
   lv_task_handler();
+
+  if (every_1_sec.Complete()) {
+    every_1_sec.Reset();
+    bool unused;
+    Serial.println("Time: " + String(rtc.getYear()) + "-" +
+                   String(rtc.getMonth(unused)) + "-" + String(rtc.getDate()) +
+                   "T" + String(rtc.getHour(unused, unused)) + ":" +
+                   String(rtc.getMinute()) + ":" + String(rtc.getSecond()));
+    ui_manager->UpdateTime();
+  }
 
   if (every_5_sec.Complete()) {
     every_5_sec.Reset();

@@ -18,8 +18,6 @@ public:
     lv_win_add_title(window, "Settings");
   }
 
-  void UpdateMeasurements() override {}
-
   std::function<void()> switch_to_big_numbers;
 };
 
