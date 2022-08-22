@@ -59,12 +59,42 @@ public:
   }
 
   void ZoomOut() {
+    const auto before_left = lv_obj_get_scroll_left(chart_);
+    const auto before_right = lv_obj_get_scroll_right(chart_);
+    const float before_pct_from_right =
+        before_left == 0 && before_right == 0
+            ? 0
+            : (float)before_right / ((float)before_left + (float)before_right);
+
     zoom_ = std::max((uint32_t)256, zoom_ * 2 / 3);
     lv_chart_set_zoom_x(chart_, zoom_);
+
+    if (zoom_ == 256) {
+      return;
+    }
+
+    const auto after_left = lv_obj_get_scroll_left(chart_);
+    const auto after_right = lv_obj_get_scroll_right(chart_);
+    const lv_coord_t target_after_right =
+        before_pct_from_right * (after_left + after_right);
+    lv_obj_scroll_by(chart_, target_after_right - after_right, 0, LV_ANIM_OFF);
   }
   void ZoomIn() {
+    const auto before_left = lv_obj_get_scroll_left(chart_);
+    const auto before_right = lv_obj_get_scroll_right(chart_);
+    const float before_pct_from_right =
+        before_left == 0 && before_right == 0
+            ? 0
+            : (float)before_right / ((float)before_left + (float)before_right);
+
     zoom_ = zoom_ * 3 / 2;
     lv_chart_set_zoom_x(chart_, zoom_);
+
+    const auto after_left = lv_obj_get_scroll_left(chart_);
+    const auto after_right = lv_obj_get_scroll_right(chart_);
+    const lv_coord_t target_after_right =
+        before_pct_from_right * (after_left + after_right);
+    lv_obj_scroll_by(chart_, target_after_right - after_right, 0, LV_ANIM_OFF);
   }
 
   std::function<void()> switch_to_big_numbers;
