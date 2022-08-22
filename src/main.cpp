@@ -152,11 +152,13 @@ void loop() {
 
   if (every_1_sec.Complete()) {
     every_1_sec.Reset();
+    /*
     bool unused;
     Serial.println("Time: " + String(rtc.getYear()) + "-" +
                    String(rtc.getMonth(unused)) + "-" + String(rtc.getDate()) +
                    "T" + String(rtc.getHour(unused, unused)) + ":" +
                    String(rtc.getMinute()) + ":" + String(rtc.getSecond()));
+                   */
     ui_manager->UpdateTime();
   }
 
